@@ -1,0 +1,56 @@
+<html>
+<head>
+  <title>WebRTC, webcam and WebGL</title>
+  <style>
+  #video1 {
+
+  }
+  </style>
+</head>
+<body>
+
+<!--
+  * the video will be hidden by default
+  * video is played through the WebGL element
+  * video is set to autoplay
+  * we don't have to make the user press play to start
+  * we're keeping the video visible during development
+-->
+<video id="video1" autoplay="autoplay"></video>
+<canvas id="display"></canvas>
+
+<!-- link to the Three.js library -->
+<script src="lib/three.min.js"></script>
+<!-- Link to the DAT.gui library -->
+<script src="lib/dat.gui.min.js"></script>
+<script>
+// WebGL code portion including DAT.gui
+
+
+// WebRTC video capture from user's web camera
+navigator.getUserMedia  = navigator.getUserMedia ||
+  navigator.webkitGetUserMedia ||
+  navigator.mozGetUserMedia ||
+  navigator.msGetUserMedia;
+
+var video = document.querySelector('video');
+
+// actual capture function
+if (navigator.getUserMedia) {
+  navigator.getUserMedia({audio: true, video: true}, function(stream) {
+    video.src = window.URL.createObjectURL(stream);
+  }, errorCallback);
+} else {
+  console.log('Native device media streaming (getUserMedia) not supported in this browser.');
+  // Display a friendly "sorry" message to the user.
+  alert("Your browser does not support getUserMedia");
+}
+
+// GUM Error callback function
+  var errorCallback = function(e) {
+    console.log('Reeeejected!', e);
+  };
+
+</script>
+</body>
+</html>
