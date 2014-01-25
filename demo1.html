@@ -1,0 +1,79 @@
+<html>
+<head>
+  <title>Demo 1: Ball on textured plane</title>
+</head>
+<body>
+<canvas id="canvas1"></canvas>
+<script src="lib/three.min.js"></script>
+<script>
+// General three.js variables
+var camera, scene, renderer;
+// floor/images variables
+var floor, floorGeometry, floorTexture;
+// Sphere geometry-related variables
+var sphereGeometry, sphereMaterial, sphereMesh;
+// Light-related variables
+var light, light2;
+// define the canvas element in JS
+var canvas1 = document.getElementById('canvas1') ;
+
+init();
+animate();
+
+
+function init()
+{
+// Step 1 : Add Scene
+scene = new THREE.Scene();
+
+// Step 2 : Add Camera
+camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 10000 );
+camera.position.set(0,-180,250);
+camera.lookAt(scene.position);
+scene.add( camera );
+
+// Step 3 : Add  objects
+floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+floorTexture.wrapS = THREE.RepeatWrapping;
+floorTexture.wrapT = THREE.RepeatWrapping;
+floorTexture.repeat.set( 10, 10 );
+floorMaterial = new THREE.MeshPhongMaterial( { map: floorTexture } );
+floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
+floor = new THREE.Mesh(floorGeometry, floorMaterial);
+
+floor.position.y = 2.5;
+floor.rotation.x = Math.PI  *  2;
+scene.add(floor);
+
+sphereGeometry = new THREE.SphereGeometry(120, 20, 20);
+sphereMaterial = new THREE.MeshPhongMaterial ({
+  color: 0x0000ff,
+  wireframe: false
+});
+sphereMesh = new THREE.Mesh( sphereGeometry, sphereMaterial);
+scene.add( sphereMesh );
+
+// Add 2 light sources. One white and one magenta
+light = new THREE.DirectionalLight( 0xffffff );
+light.position.set( 0, 45 ,0 ).normalize();
+light2 = new THREE.DirectionalLight( 0xff00ff );
+light2.position.set( 0, 0, 450 ).normalize();
+scene.add(light);
+scene.add(light2);
+
+// Step 4 : Add Renderer
+//renderer = new THREE.CanvasRenderer();
+renderer = new THREE.WebGLRenderer(canvas1);
+renderer.setSize( window.innerWidth, window.innerHeight);
+
+document.body.appendChild( renderer.domElement );
+}
+
+function animate() {
+// note: three.js includes requestAnimationFrame shim
+requestAnimationFrame( animate );
+renderer.render(scene, camera);
+}
+</script>
+</body>
+</html>

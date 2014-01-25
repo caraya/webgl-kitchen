@@ -1,4 +1,5 @@
 .DS_Store
-packages
-.project
-pubspec.lock
+three.js
+three.js-r58
+tween.js
+vizi
