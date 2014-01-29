@@ -5,6 +5,7 @@
 <body>
 <canvas id="canvas1"></canvas>
 <script src="lib/three.min.js"></script>
+<script src="lib/threex.windowresize.js"></script>
 <script>
 // General three.js variables
 var camera, scene, renderer;
@@ -14,6 +15,8 @@ var floor, floorGeometry, floorTexture;
 var sphereGeometry, sphereMaterial, sphereMesh;
 // Light-related variables
 var light, light2;
+// Handle window resize
+// var winResize   = new THREEx.WindowResize(renderer, camera)
 // define the canvas element in JS
 var canvas1 = document.getElementById('canvas1') ;
 
@@ -67,6 +70,9 @@ renderer = new THREE.WebGLRenderer(canvas1);
 renderer.setSize( window.innerWidth, window.innerHeight);
 
 document.body.appendChild( renderer.domElement );
+// EVENTS
+THREEx.WindowResize(renderer, camera);
+// THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
 }
 
 function animate() {

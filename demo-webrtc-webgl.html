@@ -2,10 +2,20 @@
 <head>
   <title>WebRTC, webcam and WebGL</title>
   <style>
-  #video1 {
-
+  #video1, #videoImage {
+    width: 480;
+    height: 360;
+    display: none;
   }
+
+
   </style>
+  <!-- link to the Three.js library -->
+  <script src="lib/three.min.js"></script>
+  <!-- Window resize extension -->
+  <script src="lib/threex.windowresize.js"></script>
+  <!-- DAT.gui library -->
+  <script src="lib/dat.gui.min.js"></script>
 </head>
 <body>
 
@@ -16,41 +26,124 @@
   * we don't have to make the user press play to start
   * we're keeping the video visible during development
 -->
-<video id="video1" autoplay="autoplay"></video>
-<canvas id="display"></canvas>
+<video id="video1" autoplay="autoplay" controls="controls"></video>
+<canvas id="videoImage"></canvas>
 
-<!-- link to the Three.js library -->
-<script src="lib/three.min.js"></script>
-<!-- Link to the DAT.gui library -->
-<script src="lib/dat.gui.min.js"></script>
 <script>
-// WebGL code portion including DAT.gui
+/*
+navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+window.URL = window.URL || window.webkitURL;
+var camvideo = document.getElementById('video1');
 
+  if (!navigator.getUserMedia) {
+    document.getElementById('errorMessage').innerHTML =
+      'Sorry. <code>navigator.getUserMedia()</code> is not available.';
+  } else {
+    navigator.getUserMedia({video: true}, gotStream, noStream);
+  }
 
-// WebRTC video capture from user's web camera
-navigator.getUserMedia  = navigator.getUserMedia ||
-  navigator.webkitGetUserMedia ||
-  navigator.mozGetUserMedia ||
-  navigator.msGetUserMedia;
+function gotStream(stream) {
+  if (window.URL)
+  {   camvideo.src = window.URL.createObjectURL(stream);   }
+  else // Opera
+  {   camvideo.src = stream;   }
 
-var video = document.querySelector('video');
+  camvideo.onerror = function(e)
+  {   stream.stop();   };
 
-// actual capture function
-if (navigator.getUserMedia) {
-  navigator.getUserMedia({audio: true, video: true}, function(stream) {
-    video.src = window.URL.createObjectURL(stream);
-  }, errorCallback);
-} else {
-  console.log('Native device media streaming (getUserMedia) not supported in this browser.');
-  // Display a friendly "sorry" message to the user.
-  alert("Your browser does not support getUserMedia");
+  stream.onended = noStream;
 }
 
-// GUM Error callback function
-  var errorCallback = function(e) {
-    console.log('Reeeejected!', e);
-  };
+function noStream(e) {
+  var msg = 'No camera available.';
+  if (e.code == 1)
+  {   msg = 'User denied access to use camera.';   }
+  document.getElementById('errorMessage').textContent = msg;
+}
+*/</script>
+<script>
+// General three.js variables
+var camera, scene, renderer;
+// floor/images variables
+var floor, floorGeometry, floorTexture;
+// Video geometry related variables
+var videoMaterial,  videoGeometry, videoMesh
+// Light-related variables
+var light, light2;
 
+// define the canvas and video eements in JS
+// Create the main canvas element
+var display = document.createElement('display') ;
+//
+
+init();
+animate();
+
+function init()
+{
+// Step 1 : Add Scene
+scene = new THREE.Scene();
+
+// Step 2 : Add Camera
+camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 10000 );
+camera.position.set(0,-180,250);
+camera.lookAt(scene.position);
+scene.add( camera );
+
+// Step 3 : Add  objects
+floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+floorTexture.wrapS = THREE.RepeatWrapping;
+floorTexture.wrapT = THREE.RepeatWrapping;
+floorTexture.repeat.set( 10, 10 );
+floorMaterial = new THREE.MeshPhongMaterial( { map: floorTexture } );
+floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
+floor = new THREE.Mesh(floorGeometry, floorMaterial);
+
+floor.position.y = 2.5;
+floor.rotation.x = Math.PI  *  2;
+scene.add(floor);
+
+// Build a cube/plane for the video. it'll take the following steps.
+//
+// 1. Attach the video to material
+// 2. Attach the material to the video
+// 3. Build the plane geometry
+// 4. Position the video
+
+videoMaterial = new THREE.MeshPhongMaterial({
+  color: 0xff00ff,
+  wireframeLinewidth: 2
+});
+videoGeometry = new THREE.CubeGeometry( 480, 360, 10, 5, 5);
+videoMesh = new THREE.Mesh(videoGeometry, videoMaterial);
+scene.add(videoMesh);
+
+
+// Add 2 light sources. One white and one magenta
+light = new THREE.DirectionalLight( 0xffffff);
+light.position.set( 0, 45 ,0 ).normalize();
+light2 = new THREE.DirectionalLight( 0xffffff);
+light2.position.set( 0, 0, 450 ).normalize();
+scene.add(light);
+scene.add(light2);
+
+// Step 4 : Add Renderer
+//renderer = new THREE.CanvasRenderer();
+renderer = new THREE.WebGLRenderer(display);
+renderer.setSize( window.innerWidth, window.innerHeight);
+
+document.body.appendChild( renderer.domElement );
+// EVENTSff
+THREEx.WindowResize(renderer, camera);
+// THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+}
+
+function animate() {
+// note: three.js includes requestAnimationFrame shim
+requestAnimationFrame( animate );
+renderer.render(scene, camera);
+}
 </script>
+
 </body>
 </html>
