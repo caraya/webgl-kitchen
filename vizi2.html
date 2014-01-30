@@ -1,0 +1,38 @@
+<html>
+<head>
+  <title></title>
+  <meta charset="utf-8">
+  <!-- Script Block -->
+  <script src="lib/jquery-1.9.1.js"></script>
+  <script src="lib/vizi.js"></script>
+  <!-- Applications specific code -->
+  <script type="text/javascript">
+  $(document).ready(function() {
+    // Create the Vizi application object
+    var container = document.getElementById("container");
+    var app = new Vizi.Application({ container : container });
+
+    var sphere = new Vizi.Object;
+    var sphereVisual = new Vizi.Visual ({
+      geometry: new THREE.SphereGeometry( 120, 20, 20),
+      material: new THREE.MeshBasicMaterial( {color: 0xff00ff })
+    });
+    sphere.addComponent (sphereVisual);
+
+
+    // Add a light to show shading
+    var light = new Vizi.Object;
+    light.addComponent(new Vizi.DirectionalLight);
+
+    // Add the cube and light to the scene
+    app.addObject(sphere);
+    app.addObject(light);
+
+    // Run it
+    app.run();
+  });
+</script></head>
+<body>
+  <div id="container" style="width:98%; height:98%; position:absolute;background-color:black"></div>
+ </body>
+</html>

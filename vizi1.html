@@ -1,0 +1,46 @@
+<html>
+<head>
+  <title></title>
+  <meta charset="utf-8">
+  <!-- Script Block -->
+  <script src="lib/jquery-1.9.1.js"></script>
+  <script src="lib/vizi.js"></script>
+  <!-- Applications specific code -->
+  <script type="text/javascript">
+  $(document).ready(function() {
+    // Create the Vizi application object
+    var container = document.getElementById("container");
+    var app = new Vizi.Application({ container : container });
+
+    // Create a phong-shaded, texture-mapped cube
+    var cube = new Vizi.Object;
+    var visual = new Vizi.Visual(
+        { geometry: new THREE.CubeGeometry(2, 2, 2),
+          material: new THREE.MeshPhongMaterial({map:THREE.ImageUtils.loadTexture("images/webgl-logo-256.jpg")})
+        });
+    cube.addComponent(visual);
+
+    // Add a rotate behavior to give the cube some life
+    var rotator = new Vizi.RotateBehavior({autoStart:true});
+    cube.addComponent(rotator);
+
+    // Rotate the cube toward the viewer to show off the 3D
+    cube.transform.rotation.x = Math.PI / 5;
+
+    // Add a light to show shading
+    var light = new Vizi.Object;
+    light.addComponent(new Vizi.DirectionalLight);
+
+    // Add the cube and light to the scene
+    app.addObject(cube);
+    app.addObject(light);
+
+    // Run it
+    app.run();
+  });
+</script>
+</head>
+<body>
+  <div id="container" style="width:98%; height:98%; position:absolute;background-color:black"></div>
+</body>
+</html>
