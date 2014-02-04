@@ -12,23 +12,54 @@
     var container = document.getElementById("container");
     var app = new Vizi.Application({ container : container });
 
+// Explicitly adding the camera so we can manipulate position later
+// TODO: play with changing the FOV for this camera from 45 to 90
+    var cam2 = new Vizi.PerspectiveCamera();
+// Poistion values are the default for a Vizi camera. Set up again to have a starting point to play with
+    cam2.position.x = 0;
+    cam2.position.y = 0;
+    cam2.position.z = 15;
+
+
+// Add objects here
+    var cube = new Vizi.Object;
+    var visual = new Vizi.Visual({
+      // THREE.CubeGeometry( width, height, depth, segmentsWidth, segmentsHeight);
+      geometry: new THREE.CubeGeometry(3, 6, 3),
+      material: new THREE.MeshPhongMaterial( {color: 0xaaaaaa, wireframe: false} )
+    });
+    cube.addComponent(visual);
+// move the cube away fom the sphere and play with some rotations (now that you know how it works)
+    cube.transform.position.x = -6;
+    cube.transform.rotation.y = -2;
+    cube.transform.rotation.z = -3;
+// TODO: Figure out the units Vizi uses for measurements, they are obviously different than the ones used by THREE, are they?
+
+//Define the sphere
     var sphere = new Vizi.Object;
     var sphereVisual = new Vizi.Visual ({
-      geometry: new THREE.SphereGeometry( 120, 20, 20),
-      material: new THREE.MeshBasicMaterial( {color: 0xff00ff })
+      // THREE.SphereGeometry( radius, segmentsWidth, segmentsHeight);
+      geometry: new THREE.SphereGeometry( 3, 32, 32),
+      material: new THREE.MeshPhongMaterial( {color: 0xff00ff, wireframe: false })
     });
     sphere.addComponent (sphereVisual);
 
-
-    // Add a light to show shading
+// Add a light to show shading
     var light = new Vizi.Object;
-    light.addComponent(new Vizi.DirectionalLight);
+    light.addComponent(new Vizi.DirectionalLight(10, -45, 300));
+// TODO: what happens if we add more lights? Add ambient light? Spotlight?
 
-    // Add the cube and light to the scene
+// Add the cube and light to the scene
+    app.addObject(cube);
+
     app.addObject(sphere);
     app.addObject(light);
+// Add the new camera to the app
+    app.addObject(cam2);
+// Activate cam2
+    cam2.active = true;
 
-    // Run it
+// Run the application
     app.run();
   });
 </script></head>

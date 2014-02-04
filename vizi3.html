@@ -1,0 +1,139 @@
+<html>
+<head>
+  <title></title>
+  <meta charset="utf-8">
+  <!-- Script Block -->
+  <script src="lib/jquery-1.9.1.js"></script>
+  <script src="lib/vizi.js"></script>
+  <!-- Applications specific code -->
+  <script type="text/javascript">
+  $(document).ready(function() {
+    // Create the Vizi application object
+    var container = document.getElementById("container");
+    // the canvas ID can be anything you want, but it has to match with the line below
+    var app = new Vizi.Application({ container : container });
+
+// Explicitly adding the camera so we can manipulate position later
+// TODO: play with changing the FOV for this camera from 45 to 90
+    var cam2 = new Vizi.PerspectiveCamera();
+// Poistion values are the default for a Vizi camera. Set up again to have a starting point to play with
+    cam2.position.x = 0;
+    // X: positive values move camera to the right, object move to the left
+    // X: Negative values move the camera to the left, object move to the right
+    cam2.position.y = 0;
+    // Y: Negative values move the camera down (objects appear higher in the rendered screen)
+    cam2.position.z = 15;
+    // Z: Smaller values make the rendered image bigger
+
+
+// Add objects here
+    var cube = new Vizi.Object;
+    var visual = new Vizi.Visual({
+      // THREE.CubeGeometry( width, height, depth, segmentsWidth, segmentsHeight);
+      // Geometry and material are standard Three.js calls passed directly to Vizi as json parameters
+      geometry: new THREE.CubeGeometry(3, 6, 3),
+      material: new THREE.MeshPhongMaterial( {color: 0xaaaaaa, wireframe: false} )
+    });
+    cube.addComponent(visual);
+
+// POSITION CHANGE
+// move the cube away fom the sphere and play with some rotations (now that you know how it works)
+// Another way to move the content is to use the Vizi.MoveBehavior, will explore that witht he sphere later in the code
+    cube.transform.position.x = -7;
+    // X controls horizontal position
+    // X: Negative values move objects to the left
+    // X: Positive values move obects to the right
+//   cube.transform.position.y = 2;
+    // Y controls vertical position
+    // Y: Positive values move the object up
+    // Y: Negative values move the object down
+//  cube.transform.position.z = -4;
+    // Z controls the depth of the object on the rendering
+    // Z: positive values move the object closer to the camera (they look bigger)
+    // Z: negative values push the object farther away from the camera (they look smaller)
+
+// ROTATION CHANGE
+     cube.transform.rotation.x = -2;
+    // rotation.x controls vertical rotation
+    // X: positive values make the top of the object rotate towards the camera
+    // X: negative values make the top of the object rotate away from the camera
+    cube.transform.rotation.y = 2;
+    // rotation.y controls horizontal rotation
+    // Y: positive values rotate the object left to right
+    // Y: negative values rotate the object right to left
+    // cube.transform.rotation.z = -3;
+
+// TODO: Figure out the units Vizi uses for measurements, they are obviously different than the ones used by THREE, are they?
+
+// BEHAVIOR CHANGE: MAKE THE CUBE ROTATE WHEN MOUSE HOVERS HOVER, STOP WHEN THE MOUSE MOVES AWAY
+// Create a rotator for the cuve to use
+    var rotator = new Vizi.RotateBehavior;
+    cube.addComponent(rotator);
+
+// The picker component allows events to be attacked to the object Picker is attached to
+    var picker = new Vizi.Picker;
+    cube.addComponent(picker);
+
+// Vizi.Picker event listeners
+    picker.addEventListener("mouseover", function() { rotator.start(); });
+    picker.addEventListener("mouseout", function() { rotator.stop(); });
+
+// BEHAVIOR CHANGE: SCALE THE CUBE WHEN CLICKED
+// Create a scaler for the cube to use
+    var scaler = new Vizi.ScaleBehavior;
+    cube.addComponent(scaler)
+// We use the same picker that we did for the first effect on the cube
+    picker.addEventListener("click", function() { scaler.start({
+      duration: 2,
+      endScale: new THREE.Vector3(4, 4, 4)
+    })});
+
+
+//Define the sphere
+    var sphere = new Vizi.Object;
+    var sphereVisual = new Vizi.Visual ({
+      // THREE.SphereGeometry( radius, segmentsWidth, segmentsHeight);
+      geometry: new THREE.SphereGeometry( 3, 32, 32),
+      material: new THREE.MeshPhongMaterial( {color: 0xff00ff, wireframe: false })
+    });
+    sphere.addComponent (sphereVisual);
+// Create a bouncer for the sphere to use
+    var bouncer = new Vizi.BounceBehavior;
+    sphere.addComponent(bouncer);
+// Make the sphere pickable
+    var picker2 = new Vizi.Picker;
+    sphere.addComponent(picker2);
+
+// Connect the picker to the bouncer, only bounce on click.
+// IF YOU'LL HAVE MORE THAN ONE ELEMENT WITH THE SAME OR SIMILAR
+// BEHAVIOR IT MAY PAY TO MAKE A PREFAB FOR IT.
+    picker2.addEventListener("click", function() { bouncer.start({ duration: 3});
+    });
+
+
+// Add a light to show shading
+    var light = new Vizi.Object;
+    light.addComponent(new Vizi.DirectionalLight(10, -45, 300));
+// TODO: what happens if we add more lights? Add ambient light? Spotlight?
+
+// ADD THE OBJECTS TO THE SCENE
+    app.addObject(cube);
+    app.addObject(sphere);
+
+// ADD THE LIGHT TO THE SCENE
+    app.addObject(light);
+
+// ADD THE NEW CAMERA TO THE APP
+    app.addObject(cam2);
+// Activate cam2
+    cam2.active = true;
+
+// Run the application
+    app.run();
+  });
+</script>
+</head>
+<body>
+  <div id="container" style="width:98%; height:98%; position:absolute;background-color:black"></div>
+ </body>
+</html>
