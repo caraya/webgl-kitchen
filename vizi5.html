@@ -116,7 +116,7 @@ function createCube() {
 
 // KEYBOARD INTERACTION
 // Trying to figure out why this doesn't work
-function onKeyDown (cube, event) {
+function onKeyDown (event) {
   var clock = new THREE.Clock();
   var delta = clock.getDelta(); // seconds.
   var moveDistance = 200 * delta; // 200 pixels per second
