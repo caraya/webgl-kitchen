@@ -1,0 +1,154 @@
+<html>
+<head>
+  <title></title>
+  <meta charset="utf-8">
+  <!-- Script Block -->
+  <script src="lib/jquery-1.9.1.js"></script>
+  <script src="lib/vizi.js"></script>
+  <!-- Applications specific code -->
+  <script type="text/javascript">
+  $(document).ready(function() {
+    //THIS EXAMPLE IS TRYING TO ADD KEYBOARD/MOUSE CONTROL TO THE OBJECT
+    //LET'S SEE HOW YOU DUPLICATE THE ACTION IN DEMO2 IN A WAY COMPATIBLE
+    // WITH VIZI
+
+    // Create the Vizi application object
+    var container = document.getElementById("container");
+    // the canvas ID can be anything you want, but it has to match with the line below
+    var app = new Vizi.Application({ container : container });
+
+    // Explicitly adding the camera so we can manipulate position later
+    var cam2 = new Vizi.PerspectiveCamera({active: true});
+    // Default oistion values are (0, 0, 10)
+    cam2.position.x = 0;
+    // X: positive values move camera to the right, object move to the left
+    // X: Negative values move the camera to the left, object move to the right
+    cam2.position.y = -10;
+    // Y: Negative values move the camera down (objects appear higher in the rendered screen)
+    cam2.position.z = 250;
+    // Z: Smaller values make the rendered image bigger
+
+
+// ADD OBJECTS HERE
+
+function createPlane() {
+    // In the sample code I took this from the image extends itself to cover the full dimensions
+    // of the canvas It is an issue with camera positioning. If it's too far it won't matter
+    // how much it repeats, it'll always look too small because of distance and number of times
+    // it repeats.
+    var plane = new Vizi.Object;
+    // Create the texture outside the visual constructor and then just pass it to the constructor
+    // instead of building it in place
+    // we do it this way to get around a limitation in JSON parsing that chokes on periods on
+    // element names (such as repeat.set)
+    var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+    floorTexture.wrapS = THREE.RepeatWrapping;
+    floorTexture.wrapT = THREE.RepeatWrapping;
+    floorTexture.repeat.set( 5, 5 ); // controls the size of the repeating squares
+    // Now that we have defined a texture we can define the object we'll attach it to.
+    // We do it this way to work around the error commented out below.
+    var visual = new Vizi.Visual(
+        { geometry: new THREE.PlaneGeometry(500, 500, 5, 5),
+          material: new THREE.MeshPhongMaterial({map: floorTexture})// closes material
+    }); // closes visual
+    plane.transform.rotation.x = 5; // have to fully figure out the way Vizi counts
+    plane.addComponent(visual);
+    return plane;
+};
+
+function createCube() {
+    var cube = new Vizi.Object;
+    var visual = new Vizi.Visual({
+      geometry: new THREE.CubeGeometry(25, 25, 25),
+      material: new THREE.MeshPhongMaterial( {color: 0xffaaff} )
+    });
+    cube.addComponent(visual);
+    // How the hell do I move the object up?
+    cube.transform.position.y = 15; // move it away from the plane
+    cube.transform.position.x = 0
+    return cube;
+};
+
+// CREATE LIGHTS
+
+    // Add ambient light to make sure that even if the directional and spot lights are not
+    // pointed correctly we'll still have some uniform light
+    //    var ambient = new Vizi.Object;
+    //    ambient.addComponent(new Vizi.AmbientLight({
+    //      color: 0x999999
+    //    }));
+
+    // Add a light to show shading
+    //    var light = new Vizi.Object;
+    //    light.addComponent(new Vizi.DirectionalLight({
+    //    position: new THREE.Vector3(90,  0, 50),
+    //    color: 0x0000ff}));
+
+    // Add a light to show shading
+    var light2 = new Vizi.Object;
+    light2.addComponent(new Vizi.DirectionalLight({
+    position: new THREE.Vector3(45,  0, 50),
+    color: 0xffffff}));
+
+    var spot1 = new Vizi.Object;
+    spot1.addComponent( new Vizi.SpotLight({
+    position: new THREE.Vector3(45, 0, 50),
+    color: 0xffaaff }) );
+
+
+// ADD OBJECTS TO THE SCENE
+
+    // Function way of adding objects
+    var plane = createPlane();
+    app.addObject(plane);
+
+    var cube = createCube();
+    app.addObject(cube);
+
+    // Add the lights to the scene
+    //app.addObject(ambient);
+    app.addObject(spot1);
+    //app.addObject(light);
+    app.addObject(light2);
+
+  // Add the new camera to the app
+    app.addObject(cam2);
+
+// KEYBOARD INTERACTION
+// Trying to figure out why this doesn't work
+function onKeyDown (event) {
+  var clock = new THREE.Clock();
+  var delta = clock.getDelta(); // seconds.
+  var moveDistance = 200 * delta; // 200 pixels per second
+
+  if (event.keyCode == Vizi.Keyboard.KEY_UP) {
+    Vizi.System.log("Key Pressed");
+    cube.transform.rotation.x  += moveDistance;
+  }
+
+  if (event.keyCode == Vizi.Keyboard.KEY_DOWN) {
+    Vizi.System.log("Key Pressed");
+    cube.transform.rotation.x  -= moveDistance;
+  }
+
+  if (event.keyCode == Vizi.Keyboard.KEY_LEFT) {
+    Vizi.System.log("Key Pressed");
+    cube.transform.rotation.y  -= moveDistance;
+  }
+
+  if (event.keyCode == Vizi.Keyboard.KEY_RIGHT) {
+    Vizi.System.log("Key Pressed");
+    cube.transform.rotation.y  += moveDistance;
+  }
+}
+
+
+// RUN THE APPLICATION
+    app.run();
+  });
+</script>
+</head>
+<body>
+  <div id="container" style="width:98%; height:98%; position:absolute;background-color:black"></div>
+ </body>
+</html>

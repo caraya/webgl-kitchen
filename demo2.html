@@ -63,6 +63,7 @@ if ( Detector.webgl ) {
 }
 // Set the size of the renderer to the full size of the screen
 renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+renderer.setClearColorHex( 0xeeeeee, 1.0 );
 // Set up the contaier element in Javascript
 var container = document.getElementById( 'display' );
 THREEx.WindowResize(renderer, camera);
@@ -82,14 +83,7 @@ floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
 floor = new THREE.Mesh(floorGeometry, floorMaterial);
 scene.add(floor);
 
-// Step 3b: Add skybox texture
-skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
-skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
-skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
-// scene.add(skyBox);
-scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
-
-// Step 3c: Add model specific objects
+// Step 3b: Add model specific objects
 movingCubeGeometry = new THREE.CubeGeometry( 50, 50, 50, 50);
 movingCubeMaterial = new THREE.MeshBasicMaterial( {color: 0xff00ff} );
 movingCube = new THREE.Mesh(movingCubeGeometry, movingCubeMaterial);

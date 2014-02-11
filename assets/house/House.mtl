@@ -1,0 +1,59 @@
+# MTL written from D:\PROJECT 3D Asset Store\Building\MiniHouse\House.obj
+newmtl Default
+Kd 0.8 0.8 0.8
+Ns 256
+d 1
+illum 2
+Ka 0 0 0
+Ks 0.2 0.2 0.2
+newmtl Door
+Kd 0.57368 0.666299 0.8
+Ns 256
+d 1
+illum 2
+Ka 0 0 0
+Ks 0.2 0.2 0.2
+map_Kd D:\Textures\kayu7.jpg
+newmtl FrontFloor
+Kd 0.8 0.8 0.8
+Ns 256
+d 1
+illum 2
+Ka 0 0 0
+Ks 0.2 0.2 0.2
+newmtl Garage
+Kd 0.175616 0.175616 0.175616
+Ns 256
+d 1
+illum 2
+Ka 0 0 0
+Ks 0.2 0.2 0.2
+newmtl Glass
+Kd 0.8 0.8 0.8
+Ns 256
+d 0.3
+illum 2
+Ka 0 0 0
+Ks 0.2 0.2 0.2
+newmtl RainOut
+Kd 0.287697 0.287697 0.287697
+Ns 256
+d 1
+illum 2
+Ka 0 0 0
+Ks 0.2 0.2 0.2
+newmtl Roof
+Kd 0.57368 0.666299 0.8
+Ns 256
+d 1
+illum 2
+Ka 0 0 0
+Ks 0.2 0.2 0.2
+newmtl Wall
+Kd 0.57368 0.666299 0.8
+Ns 256
+d 1
+illum 2
+Ka 0 0 0
+Ks 0.2 0.2 0.2
+map_Kd D:\Textures\6.JPG
