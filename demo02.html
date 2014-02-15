@@ -1,0 +1,151 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Demo 2: keyboard interactions</title>
+</head>
+<body>
+
+<!-- This is where the model will be displayed -->
+<div id="display"></div>
+
+<!-- Script links -->
+<script src="lib/three.min.js"></script>
+<!-- Do I even need orbit control for this?
+<script src="lib/OrbitControls.js"></script>
+-->
+<script src="lib/Detector.js"></script>
+<script src="lib/threex.keyboardstate.js"></script>
+<script src="lib/threex.windowresize.js"></script>
+
+<!-- Begin model script -->
+<script>
+// General three.js variables
+var camera, scene, renderer;
+// Model specific variables
+// Floor
+var floor, floorGeometry, floorTexture;
+// skybox
+var skyBoxGeometry, skyBoxMaterial, skyBox;
+// light sources
+var light, light2;
+// Space for additional material
+var movingCubeTexture, movingCubeGeometry, movingCubeTexture;
+// Window measurement
+var SCREEN_WIDTH = window.innerWidth;
+var SCREEN_HEIGHT = window.innerHeight;
+// additional variables
+//var controls = new THREE.OrbitControls();
+var clock = new THREE.Clock();
+var keyboard = new THREEx.KeyboardState();
+
+init();
+animate();
+
+
+function init()
+{
+// Step 1: Add Scene
+scene = new THREE.Scene();
+// Now we can set the camera using the elements defined above
+// We can also reduce the number of variables by putting the values directly into the camera variable below
+camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 10000);
+scene.add(camera);
+// The position.set value for the camera will setup the initial field of vision for the model
+camera.position.set(0, -450, 150);
+camera.lookAt(scene.position);
+
+
+// Step 2: Set up the renderer
+// We use the WebGL detector library we referenced in our scripts  to test if WebGL is supported or not
+// If it is supported then we use the WebGL renderer with antialiasing
+// If there is no WebGL support we fall back to the canvas renderer
+if ( Detector.webgl ) {
+  renderer = new THREE.WebGLRenderer( {antialias:true} );
+ }  else {
+     renderer = new THREE.CanvasRenderer();
+}
+// Set the size of the renderer to the full size of the screen
+renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+renderer.setClearColor( 0xeeeeee, 1.0 );
+// Set up the contaier element in Javascript
+var container = document.getElementById( 'display' );
+THREEx.WindowResize(renderer, camera);
+// CONTROLS
+//controls = new THREE.OrbitControls( camera, renderer.domElement );
+// Add the child renderer as the container's child element
+container.appendChild( renderer.domElement );
+
+// Step 3 : Add  objects
+// Step 3a: Add the textured floor
+floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+floorTexture.wrapS = THREE.RepeatWrapping;
+floorTexture.wrapT = THREE.RepeatWrapping;
+floorTexture.repeat.set( 10, 10 );
+floorMaterial = new THREE.MeshPhongMaterial( { map: floorTexture } );
+floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
+floor = new THREE.Mesh(floorGeometry, floorMaterial);
+scene.add(floor);
+
+// Step 3b: Add model specific objects
+movingCubeGeometry = new THREE.CubeGeometry( 50, 50, 50, 50);
+movingCubeMaterial = new THREE.MeshBasicMaterial( {color: 0xff00ff} );
+movingCube = new THREE.Mesh(movingCubeGeometry, movingCubeMaterial);
+movingCube.position.z = 35;
+movingCube.position.x = 0
+
+scene.add(movingCube);
+
+// Step 4: Add light sources
+// Add 2 light sources.
+light = new THREE.DirectionalLight( 0xffffff );
+light.position.set( 0, 90 ,450 ).normalize();
+light2 = new THREE.DirectionalLight( 0xffffff);
+light2.position.set( 0, 90, 450 ).normalize();
+scene.add(light);
+scene.add(light2);
+}
+
+function animate() {
+  requestAnimationFrame( animate );
+  render();
+  update();
+}
+
+function render() {
+  renderer.render( scene, camera );
+}
+
+function update() {
+  var delta = clock.getDelta(); // seconds.
+  var moveDistance = 200 * delta; // 200 pixels per second
+  //var rotateAngle = Math.PI / 2 * delta;   // pi/2 radians (90 degrees) per second
+
+// global coordinates
+if ( keyboard.pressed("left") )
+  movingCube.position.x -= moveDistance;
+if ( keyboard.pressed("right") )
+  movingCube.position.x += moveDistance;
+if ( keyboard.pressed("up") )
+  movingCube.position.y += moveDistance;
+if ( keyboard.pressed("down") )
+  movingCube.position.y -= moveDistance;
+if ( keyboard.pressed ("w"))
+  movingCube.position.z += moveDistance;
+if ( keyboard.pressed ("s"))
+  movingCube.position.z -= moveDistance;
+// reset (let's see if this works)
+if ( keyboard.pressed ("z")) {
+  movingCube.position.x = 0;
+  movingCube.position.y = 0;
+  movingCube.position.z = 50;
+}
+
+  //controls.update();
+  //stats.update();
+}
+
+
+
+</script>
+</body>
+</html>

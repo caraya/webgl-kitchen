@@ -1,0 +1,164 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Three.js: Random Particle System</title>
+  </head>
+<body>
+<!-- This is where the model will be displayed -->
+<div id="display"></div>
+
+<!-- Script links -->
+<script src="lib/three.min.js"></script>
+<script src="lib/TrackballControls.js"></script>
+<script src="lib/Detector.js"></script>
+<script src="lib/threex.windowresize.js"></script>
+
+<!-- Begin model script -->
+<script>
+// General three.js variables
+var camera, scene, renderer;
+// Model specific variables
+// particle related
+var particleSystem, particleCount;
+// light sources
+var light, light2;
+// Window measurement
+var SCREEN_WIDTH = window.innerWidth;
+var SCREEN_HEIGHT = window.innerHeight;
+// additional variables
+var range = 50;
+var particleSystem;
+
+init();
+createParticles();
+animate();
+
+function init() {
+// Step 1: Add Scene
+scene = new THREE.Scene();
+// Now we can set the camera using the elements defined above
+// We can also reduce the number of variables by putting the values directly into the camera variable below
+camera = new THREE.PerspectiveCamera( 45, SCREEN_WIDTH / SCREEN_HEIGHT, 0.1, 10000);
+scene.add(camera);
+// The position.set value for the camera will setup the initial field of vision for the model
+camera.position.set(0, 0, 50);
+camera.lookAt(scene.position);
+// TrackballControlls
+controls = new THREE.TrackballControls( camera );
+controls.zoomSpeed = 0.5;
+
+
+// Step 2: Set up the renderer
+// We use the WebGL detector library we referenced in our scripts  to test if WebGL is supported or not
+// If it is supported then we use the WebGL renderer with antialiasing
+// If there is no WebGL support we fall back to the canvas renderer
+if ( Detector.webgl ) {
+  renderer = new THREE.WebGLRenderer( {antialias:true} );
+ }  else {
+     renderer = new THREE.CanvasRenderer();
+}
+// Set the size of the renderer to the full size of the screen
+renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+renderer.setClearColor( 0x999999, 1.0 );
+// Set up the contaier element in Javascript
+var container = document.getElementById( 'display' );
+THREEx.WindowResize(renderer, camera);
+// Add the child renderer as the container's child element
+container.appendChild( renderer.domElement );
+
+// Step 3 : Add  objects
+// Add 2 light sources.
+light = new THREE.DirectionalLight( 0xffffff );
+light.position.set( 0, 90 ,450 ).normalize();
+light2 = new THREE.DirectionalLight( 0xffffff);
+light2.position.set( 0, 90, 450 ).normalize();
+scene.add(light);
+scene.add(light2);
+
+// Step 3b: Add basic information to the page
+var info = document.createElement( 'div' );
+info.style.position = 'absolute';
+info.style.top = '10px';
+info.style.width = '100%';
+info.style.textAlign = 'center';
+info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> -- Basic Particle Work. Based on <a href="">Aerotwist\'s tutorial</a>';
+container.appendChild( info );
+}
+
+function createParticles() {
+  // When using functions to encapsulate reusable elements, make sure that the variable is defined in the global scope
+  // first, before you define it inside the function, otherwise you will not be able to use the values outside the function
+  // they were created in (Javascript function scope)
+  // create the particle variables
+  var particleCount = 1800,
+  // create a velocity vector
+  particles = new THREE.Geometry(),
+  pMaterial = new THREE.ParticleBasicMaterial({
+    color: 0xFFFFFF,
+    size: 20,
+    map: THREE.ImageUtils.loadTexture("textures/particle.png"),
+    blending: THREE.AdditiveBlending,
+    transparent: true
+});
+
+// now create the individual particles
+for (var p = 0; p < particleCount; p++) {
+  // create a particle with random
+  // position values, -250 -> 250
+  var pX = Math.random() * 500 - 250,
+    pY = Math.random() * 500 - 250,
+    pZ = Math.random() * 500 - 250,
+    // Use THREE.Vector3 instead of creating a THREE.Vertex and passing THREE.Vector3 as parameter
+    particle = new THREE.Vector3(pX, pY, pZ);
+    // Velocity expressed in x/y/z cordinates, we can make any of the values random
+    particle.velocity = new THREE.Vector3(0, -Math.random(), 0);
+    // add it to the geometry
+    particles.vertices.push(particle);
+}
+
+// create the particle system
+particleSystem = new THREE.ParticleSystem( particles, pMaterial );
+
+// Update the particle system to sort the particles which enables the behaviour we want
+particleSystem.sortParticles = true;
+
+
+// add it to the scene
+scene.add(particleSystem);
+console.log("the value of particleSystem is: " + particleSystem);
+}
+
+function animate() {
+  particleSystem.position.y -= 0.5;
+  // As the original tutorial author points out this is a brute force approach and will work
+  // as long as we keep the model simple. For more complex models we may want to look
+  // at different models of particle animation
+  var pCount = particleCount;
+  while (pCount--) {
+    // get the particle
+    var particle = particles.vertices[pCount];
+
+    // check if we need to reset
+    if (particle.position.y < -200) {
+      particle.position.y = 200;
+      particle.velocity.y = 0;
+    } // End If
+
+    // update the velocity with
+    // a splat of randomniz
+    particle.velocity.y += Math.random() * .5;
+
+    // and the position
+    particle.position.addSelf(particle.velocity);
+  } // End While
+
+  // flag to the particle system
+  // that we've changed its vertices.
+  particleSystem.geometry.__dirtyVertices = true;
+
+  renderer.render( scene, camera );
+  requestAnimationFrame( animate );
+} // End Animate function
+</script>
+</body>
+</html>
