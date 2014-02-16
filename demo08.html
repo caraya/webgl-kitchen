@@ -2,6 +2,11 @@
 <head>
   <meta charset="utf-8">
   <title>Demo 2: keyboard interactions</title>
+<!-- jQuery code to display an information button and box when clicked. -->
+<script src="lib/jquery-1.9.1.js"></script>
+<script src="lib/jquery-ui-1.10.3.custom.js"></script>
+<link rel=stylesheet href="assets/style/jquery-ui.css" />
+<link rel=stylesheet href="assets/style/info.css"/>
 </head>
 <body>
 
@@ -10,13 +15,24 @@
 
 <!-- Script links -->
 <script src="lib/three.min.js"></script>
-<!-- Do I even need orbit control for this?
-<script src="lib/OrbitControls.js"></script>
--->
 <script src="lib/Detector.js"></script>
 <script src="lib/threex.keyboardstate.js"></script>
 <script src="lib/threex.windowresize.js"></script>
 
+<!--
+<div id="infoButton"></div>
+<div id="infoBox" title="Demo Information">
+Demo controls:
+<ul>
+<li> P: play video
+<li> Space: pause video
+<li> S: stop video
+<li> R: rewind to beginning
+</ul>
+Derived from material from:
+<a href="http://stemkoski.github.io/Three.js/">http://stemkoski.github.io/Three.js/</a>
+</div>
+-->
 <!-- Begin model script -->
 <script>
 // General three.js variables
@@ -29,7 +45,7 @@ var skyBoxGeometry, skyBoxMaterial, skyBox;
 // light sources
 var light, light2;
 // Space for additional material
-var movingCubeTexture, movingCubeGeometry, movingCubeTexture;
+var videoTexture, videoGeometry;
 // Window measurement
 var SCREEN_WIDTH = window.innerWidth;
 var SCREEN_HEIGHT = window.innerHeight;
@@ -51,8 +67,8 @@ scene = new THREE.Scene();
 camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 10000);
 scene.add(camera);
 // The position.set value for the camera will setup the initial field of vision for the model
-camera.position.set(0, -450, 150);
-camera.lookAt(scene.position);
+//camera.position.set(0, -450, 150);
+//camera.lookAt(scene.position);
 
 
 // Step 2: Set up the renderer
@@ -87,13 +103,59 @@ floor = new THREE.Mesh(floorGeometry, floorMaterial);
 scene.add(floor);
 
 // Step 3b: Add model specific objects
-movingCubeGeometry = new THREE.CubeGeometry( 50, 50, 50, 50);
-movingCubeMaterial = new THREE.MeshBasicMaterial( {color: 0xff00ff} );
-movingCube = new THREE.Mesh(movingCubeGeometry, movingCubeMaterial);
-movingCube.position.z = 35;
-movingCube.position.x = 0
+  // SKYBOX/FOG
+  var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
+  var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
+  var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
+  // scene.add(skyBox);
+  scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
 
-scene.add(movingCube);
+
+  ///////////
+  // VIDEO //
+  ///////////
+
+  // create the video element
+  video = document.createElement( 'video' );
+  // video.id = 'video';
+  // video.type = ' video/ogg; codecs="theora, vorbis" ';
+  video.src = "assets/videos/sintel.ogv";
+  video.load(); // must call after setting/changing source
+  video.play();
+
+  // alternative method --
+  // create DIV in HTML:
+  // <video id="myVideo" autoplay style="display:none">
+  //    <source src="videos/sintel.ogv" type='video/ogg; codecs="theora, vorbis"'>
+  // </video>
+  // and set JS variable:
+  // video = document.getElementById( 'myVideo' );
+
+  videoImage = document.createElement( 'canvas' );
+  videoImage.width = 480;
+  videoImage.height = 204;
+
+  videoImageContext = videoImage.getContext( '2d' );
+  // background color if no video present
+  videoImageContext.fillStyle = '#000000';
+  videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
+
+  videoTexture = new THREE.Texture( videoImage );
+  videoTexture.minFilter = THREE.LinearFilter;
+  videoTexture.magFilter = THREE.LinearFilter;
+
+  var movieMaterial = new THREE.MeshBasicMaterial( { map: videoTexture, overdraw: true, side:THREE.DoubleSide } );
+  // the geometry on which the movie will be displayed;
+  //    movie image will be scaled to fit these dimensions.
+  var movieGeometry = new THREE.PlaneGeometry( 240, 100, 4, 4 );
+  var movieScreen = new THREE.Mesh( movieGeometry, movieMaterial );
+  movieScreen.position.set(0,50,0);
+  scene.add(movieScreen);
+
+  camera.position.set(0,150,300);
+  camera.lookAt(floor.position);
+
+}
 
 // Step 4: Add light sources
 // Add 2 light sources.
@@ -108,41 +170,12 @@ scene.add(light2);
 function animate() {
   requestAnimationFrame( animate );
   render();
-  update();
 }
 
 function render() {
   renderer.render( scene, camera );
 }
-
-function update() {
-  var delta = clock.getDelta(); // seconds.
-  var moveDistance = 200 * delta; // 200 pixels per second
-  //var rotateAngle = Math.PI / 2 * delta;   // pi/2 radians (90 degrees) per second
-
-// global coordinates
-if ( keyboard.pressed("left") )
-  movingCube.position.x -= moveDistance;
-if ( keyboard.pressed("right") )
-  movingCube.position.x += moveDistance;
-if ( keyboard.pressed("up") )
-  movingCube.position.y += moveDistance;
-if ( keyboard.pressed("down") )
-  movingCube.position.y -= moveDistance;
-if ( keyboard.pressed ("w"))
-  movingCube.position.z += moveDistance;
-if ( keyboard.pressed ("s"))
-  movingCube.position.z -= moveDistance;
-// reset (let's see if this works)
-if ( keyboard.pressed ("z")) {
-  movingCube.position.x = 0;
-  movingCube.position.y = 0;
-  movingCube.position.z = 50;
-}
-
-  //controls.update();
-  //stats.update();
-}
+x
 
 
 

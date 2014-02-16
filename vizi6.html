@@ -27,10 +27,9 @@
     // Y: Negative values move the camera down (objects appear higher in the rendered screen)
     cam2.position.z = 250;
     // Z: Smaller values make the rendered image bigger
-
+    //WONDER IF THIS IS GOING TO WORK
 
 // ADD OBJECTS HERE
-
 function createPlane() {
     // In the sample code I took this from the image extends itself to cover the full dimensions
     // of the canvas It is an issue with camera positioning. If it's too far it won't matter
@@ -41,7 +40,7 @@ function createPlane() {
     // instead of building it in place
     // we do it this way to get around a limitation in JSON parsing that chokes on periods on
     // element names (such as repeat.set)
-    var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+    var floorTexture = new THREE.ImageUtils.loadTexture( 'assets/images/checkerboard.jpg' );
     floorTexture.wrapS = THREE.RepeatWrapping;
     floorTexture.wrapT = THREE.RepeatWrapping;
     floorTexture.repeat.set( 5, 5 ); // controls the size of the repeating squares
@@ -63,7 +62,6 @@ function createCube() {
       material: new THREE.MeshPhongMaterial( {color: 0xffaaff} )
     });
     cube.addComponent(visual);
-    // How the hell do I move the object up?
     cube.transform.position.y = 15; // move it away from the plane
     cube.transform.position.x = 0
     return cube;
@@ -103,6 +101,7 @@ function createCube() {
     app.addObject(plane);
 
     var cube = createCube();
+    cube.addEventListener("keydown", function() { onKeyDown(event); });
     app.addObject(cube);
 
     // Add the lights to the scene
@@ -115,32 +114,37 @@ function createCube() {
     app.addObject(cam2);
 
 // KEYBOARD INTERACTION
-// Trying to figure out why this doesn't work
+window.onkeydown = onKeyDown;
+
+
 function onKeyDown (event) {
+  //event.preventDefault();
   var clock = new THREE.Clock();
   var delta = clock.getDelta(); // seconds.
   var moveDistance = 200 * delta; // 200 pixels per second
 
   if (event.keyCode == Vizi.Keyboard.KEY_UP) {
-    Vizi.System.log("Key Pressed");
-    cube.transform.rotation.x  += moveDistance;
+    Vizi.System.log("Key UP Pressed");
+    // Trying to figure out why this doesn't work for any direction
+    // It'll trigger the system log but not the line below
+    cube.transform.position.x   += moveDistance;
   }
 
   if (event.keyCode == Vizi.Keyboard.KEY_DOWN) {
-    Vizi.System.log("Key Pressed");
-    cube.transform.rotation.x  -= moveDistance;
+    Vizi.System.log("Key DOWN Pressed");
+    cube.transform.position.x  -= moveDistance;
   }
 
   if (event.keyCode == Vizi.Keyboard.KEY_LEFT) {
-    Vizi.System.log("Key Pressed");
-    cube.transform.rotation.y  -= moveDistance;
+    Vizi.System.log("Key LEFT Pressed");
+    cube.transform.position.y  -= moveDistance;
   }
 
   if (event.keyCode == Vizi.Keyboard.KEY_RIGHT) {
-    Vizi.System.log("Key Pressed");
-    cube.transform.rotation.y  += moveDistance;
+    Vizi.System.log("Key RIGHT Pressed");
+    cube.transform.position.y  += moveDistance;
   }
-}
+};
 
 
 // RUN THE APPLICATION

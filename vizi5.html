@@ -41,7 +41,7 @@ function createPlane() {
     // instead of building it in place
     // we do it this way to get around a limitation in JSON parsing that chokes on periods on
     // element names (such as repeat.set)
-    var floorTexture = new THREE.ImageUtils.loadTexture( 'images/checkerboard.jpg' );
+    var floorTexture = new THREE.ImageUtils.loadTexture( 'assets/images/checkerboard.jpg' );
     floorTexture.wrapS = THREE.RepeatWrapping;
     floorTexture.wrapT = THREE.RepeatWrapping;
     floorTexture.repeat.set( 5, 5 ); // controls the size of the repeating squares

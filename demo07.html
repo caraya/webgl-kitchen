@@ -19,7 +19,7 @@
 var camera, scene, renderer;
 // Model specific variables
 // particle related
-var particleSystem, particleCount;
+var cube;
 // light sources
 var light, light2;
 // Window measurement
@@ -81,81 +81,43 @@ info.style.position = 'absolute';
 info.style.top = '10px';
 info.style.width = '100%';
 info.style.textAlign = 'center';
-info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> -- Basic Particle Work. Based on <a href="">Aerotwist\'s tutorial</a>';
+info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> -- rotating cube with different colors on each face';
 container.appendChild( info );
 }
 
-function createParticles() {
-  // When using functions to encapsulate reusable elements, make sure that the variable is defined in the global scope
-  // first, before you define it inside the function, otherwise you will not be able to use the values outside the function
-  // they were created in (Javascript function scope)
-  // create the particle variables
-  var particleCount = 1800,
-  // create a velocity vector
-  particles = new THREE.Geometry(),
-  pMaterial = new THREE.ParticleBasicMaterial({
-    color: 0xFFFFFF,
-    size: 20,
-    map: THREE.ImageUtils.loadTexture("assets/textures/particle.png"),
-    blending: THREE.AdditiveBlending,
-    transparent: true
-});
-
-// now create the individual particles
-for (var p = 0; p < particleCount; p++) {
-  // create a particle with random
-  // position values, -250 -> 250
-  var pX = Math.random() * 500 - 250,
-    pY = Math.random() * 500 - 250,
-    pZ = Math.random() * 500 - 250,
-    // Use THREE.Vector3 instead of creating a THREE.Vertex and passing THREE.Vector3 as parameter
-    particle = new THREE.Vector3(pX, pY, pZ);
-    // Velocity expressed in x/y/z cordinates, we can make any of the values random
-    particle.velocity = new THREE.Vector3(0, -Math.random(), 0);
-    // add it to the geometry
-    particles.vertices.push(particle);
-}
-
-// create the particle system
-particleSystem = new THREE.ParticleSystem( particles, pMaterial );
-
-// Update the particle system to sort the particles which enables the behaviour we want
-particleSystem.sortParticles = true;
-
-
-// add it to the scene
-scene.add(particleSystem);
-console.log("the value of particleSystem is: " + particleSystem);
+function createCube() {
+  var geometry = new THREE.CubeGeometry(100, 100, 100);
+  var materials = [
+                //Left side (posx)
+                new THREE.MeshLambertMaterial({
+                    color: 0x1a0e05
+                }),
+                //Right side (negx)
+                new THREE.MeshLambertMaterial({
+                    color: 0x1a0e05
+                }),
+                //Top side (posy)
+                new THREE.MeshLambertMaterial({
+                    color: 0x1a0e05
+                }),
+                //Bottom side (negy)
+                new THREE.MeshLambertMaterial({
+                    color: 0xffffff,
+                    map: texture
+                }),
+                //Front side (posz)
+                new THREE.MeshLambertMaterial({
+                    color: 0x1a0e05
+                }),
+                //Back side (negz)
+                new THREE.MeshLambertMaterial({
+                    color: 0x1a0e05
+                })
+    ];
+  var cube = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
 }
 
 function animate() {
-  particleSystem.position.y -= 0.5;
-  // As the original tutorial author points out this is a brute force approach and will work
-  // as long as we keep the model simple. For more complex models we may want to look
-  // at different models of particle animation
-  var pCount = particleCount;
-  while (pCount--) {
-    // get the particle
-    var particle = particles.vertices[pCount];
-
-    // check if we need to reset
-    if (particle.position.y < -200) {
-      particle.position.y = 200;
-      particle.velocity.y = 0;
-    } // End If
-
-    // update the velocity with
-    // a splat of randomniz
-    particle.velocity.y += Math.random() * .5;
-
-    // and the position
-    particle.position.addSelf(particle.velocity);
-  } // End While
-
-  // flag to the particle system
-  // that we've changed its vertices.
-  particleSystem.geometry.__dirtyVertices = true;
-
   renderer.render( scene, camera );
   requestAnimationFrame( animate );
 } // End Animate function
