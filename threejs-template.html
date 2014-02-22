@@ -1,0 +1,94 @@
+<html>
+<head>
+  <title>Three.js Example Template</title>
+</head>
+<body>
+<canvas id="canvas1"></canvas>
+<!--
+  At the very minimum we need the two libraries below
+  Examples/Demos may need additional scripts and libraries,
+  From Three.js, Threex or other sources
+-->
+<script src="lib/three.min.js"></script>
+<script src="lib/threex.windowresize.js"></script>
+
+<script>
+// General three.js variables
+var camera, scene, renderer;
+// floor/images variables
+var floor, floorGeometry, floorTexture;
+// Object related variables
+
+
+// Light-related variables, modify as needed
+var light, light2;
+// define the canvas element in JS
+var canvas1 = document.getElementById('canvas1') ;
+
+// If you're using functions to encapsulate functionality do the following:
+// 1. Include the functons between init() and animate()
+// 2. Make damn sure that you don't redeclare variables inside the functions (don't use var twice)
+//     as this will cause the code to fail
+init();
+animate();
+
+
+function init() {
+// Step 1 : Add Scene
+scene = new THREE.Scene();
+
+// Step 2 : Add Camera
+camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 10000 );
+camera.position.set(0,-180,250);
+camera.lookAt(scene.position);
+scene.add( camera );
+
+// Step 3 : Add  basic checkerboard floor plane
+floorTexture = new THREE.ImageUtils.loadTexture( 'assets/images/checkerboard.jpg' );
+floorTexture.wrapS = THREE.RepeatWrapping;
+floorTexture.wrapT = THREE.RepeatWrapping;
+floorTexture.repeat.set( 10, 10 );
+floorMaterial = new THREE.MeshPhongMaterial( { map: floorTexture } );
+floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
+floor = new THREE.Mesh(floorGeometry, floorMaterial);
+
+floor.position.y = 2.5;
+floor.rotation.x = Math.PI  *  2;
+scene.add(floor);
+
+// If you will not use functions to create objects then put the objects below
+sphereGeometry = new THREE.SphereGeometry(120, 20, 20);
+sphereMaterial = new THREE.MeshPhongMaterial ({
+  color: 0x0000ff,
+  wireframe: false
+});
+sphereMesh = new THREE.Mesh( sphereGeometry, sphereMaterial);
+scene.add( sphereMesh );
+
+// If you will not use functions to create the light sources, then put them below
+light = new THREE.DirectionalLight( 0xffffff );
+light.position.set( 0, 45 ,0 ).normalize();
+light2 = new THREE.DirectionalLight( 0xff00ff );
+light2.position.set( 0, 0, 450 ).normalize();
+scene.add(light);
+scene.add(light2);
+
+// Step 4 : Add Renderer
+//renderer = new THREE.CanvasRenderer();
+renderer = new THREE.WebGLRenderer(canvas1);
+renderer.setSize( window.innerWidth, window.innerHeight);
+
+document.body.appendChild( renderer.domElement );
+// This is what handles the window resize. No additional action is needed
+THREEx.WindowResize(renderer, camera);
+}
+
+function animate() {
+// requestAnimationFrame shim is included in Three.js, no need to create your own
+// animate() can also handle specific animation steps or they can be handled to an external function
+requestAnimationFrame( animate );
+renderer.render(scene, camera);
+}
+</script>
+</body>
+</html>

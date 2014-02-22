@@ -1,0 +1,169 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Three.js - Drawing Non - Mesh, Non-object lines</title>
+</head>
+<body>
+
+<!-- This is where the model will be displayed -->
+<div id="display"></div>
+
+
+<!-- Script links -->
+<script src="lib/three.min.js"></script>
+<script src="lib/Detector.js"></script>
+<script src="lib/threex.windowresize.js"></script>
+<!-- Begin model script -->
+<script>
+// General three.js variables
+var camera, scene, renderer;
+// Model specific variables
+// light sources
+var light, light2;
+// Space for additional material
+// Window measurement
+var SCREEN_WIDTH = window.innerWidth;
+var SCREEN_HEIGHT = window.innerHeight;
+// additional variables
+
+init();
+animate();
+
+
+function init()
+{
+// Step 1: Add Scene
+scene = new THREE.Scene();
+// Now we can set the camera using the elements defined above
+// We can also reduce the number of variables by putting the values directly into the camera variable below
+camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 10000);
+scene.add(camera);
+// The position.set value for the camera will setup the initial field of vision for the model
+camera.position.set(0, 0, 450);
+camera.lookAt(scene.position);
+
+
+// Step 2: Set up the renderer
+// We use the WebGL detector library we referenced in our scripts  to test if WebGL is supported or not
+// If it is supported then we use the WebGL renderer with antialiasing
+// If there is no WebGL support we fall back to the canvas renderer
+if ( Detector.webgl ) {
+  renderer = new THREE.WebGLRenderer( {antialias:true} );
+ }  else {
+     renderer = new THREE.CanvasRenderer();
+}
+// Set the size of the renderer to the full size of the screen
+renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+renderer.setClearColor( 0xeeeeee, 1.0 );
+// Set up the contaier element in Javascript
+var container = document.getElementById( 'display' );
+THREEx.WindowResize(renderer, camera);
+// CONTROLS
+//controls = new THREE.OrbitControls( camera, renderer.domElement );
+// Add the child renderer as the container's child element
+container.appendChild( renderer.domElement );
+
+
+// Step 3 : Add  objects
+// Step 3a: Add the textured floor
+//floorTexture = new THREE.ImageUtils.loadTexture( 'assets/images/checkerboard.jpg' );
+//floorTexture.wrapS = THREE.RepeatWrapping;
+//floorTexture.wrapT = THREE.RepeatWrapping;
+//floorTexture.repeat.set( 10, 10 );
+//floorMaterial = new THREE.MeshPhongMaterial( { map: floorTexture } );
+//floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
+//floor = new THREE.Mesh(floorGeometry, floorMaterial);
+//floor.position.set(0,0,0);
+//scene.add(floor);
+
+// Step 3b: Add information to the page
+// Step 3b: Add basic information to the page
+var info = document.createElement( 'div' );
+info.style.position = 'absolute';
+info.style.top = '10px';
+info.style.width = '100%';
+info.style.textAlign = 'center';
+info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> -- Drawing lines';
+container.appendChild( info );
+
+//LINES
+var lineGeometry = new THREE.Geometry();
+  var vertArray = lineGeometry.vertices;
+  vertArray.push( new THREE.Vector3(-150, -100, 0), new THREE.Vector3(-150, 100, 0) );
+  lineGeometry.computeLineDistances();
+  var lineMaterial = new THREE.LineBasicMaterial( { color: 0xcc0000 } );
+  var line = new THREE.Line( lineGeometry, lineMaterial );
+  scene.add(line);
+
+  var lineGeometry = new THREE.Geometry();
+  var vertArray = lineGeometry.vertices;
+  vertArray.push( new THREE.Vector3(-100, -100, 0), new THREE.Vector3(-100, 100, 0) );
+  lineGeometry.computeLineDistances();
+  var lineMaterial = new THREE.LineDashedMaterial( { color: 0x00cc00, dashSize: 4, gapSize: 2 } );
+  var line = new THREE.Line( lineGeometry, lineMaterial );
+  scene.add(line);
+
+  var lineGeometry = new THREE.Geometry();
+  var vertArray = lineGeometry.vertices;
+  vertArray.push( new THREE.Vector3(-50, -100, 0), new THREE.Vector3(-50, 100, 0) );
+  lineGeometry.computeLineDistances();
+  var lineMaterial = new THREE.LineDashedMaterial( { color: 0x0000cc, dashSize: 1, gapSize: 3 } );
+  var line = new THREE.Line( lineGeometry, lineMaterial );
+  scene.add(line);
+
+  var cubeGeometry = new THREE.CubeGeometry( 50, 50, 50 );
+
+  // use LineBasicMaterial if no dashes are desired
+  var dashMaterial = new THREE.LineDashedMaterial( { color: 0x000000, dashSize: 2, gapSize: 3 } );
+
+  cube = new THREE.Line( geo2line(cubeGeometry), dashMaterial, THREE.LinePieces );
+  cube.position.set(50,26,0);
+  scene.add(cube);
+
+// Step 4: Add light sources
+// Add 2 light sources.
+light = new THREE.DirectionalLight( 0xffffff );
+light.position.set( 0, 90 ,1000 ).normalize();
+//light2 = new THREE.DirectionalLight( 0xffffff);
+//light2.position.set( 0, 90, 450 ).normalize();
+scene.add(light);
+//scene.add(light2);
+}
+
+function geo2line( geo )  { // credit to WestLangley through stemkoski!
+    var geometry = new THREE.Geometry();
+    var vertices = geometry.vertices;
+
+  for ( i = 0; i < geo.faces.length; i++ ) {
+    var face = geo.faces[ i ];
+    if ( face instanceof THREE.Face3 ){
+      var a = geo.vertices[ face.a ].clone();
+      var b = geo.vertices[ face.b ].clone();
+      var c = geo.vertices[ face.c ].clone();
+      vertices.push( a,b, b,c, c,a );
+    }
+    else if ( face instanceof THREE.Face4 ) {
+      var a = geo.vertices[ face.a ].clone();
+      var b = geo.vertices[ face.b ].clone();
+      var c = geo.vertices[ face.c ].clone();
+      var d = geo.vertices[ face.d ].clone();
+      vertices.push( a,b, b,c, c,d, d,a );
+    }
+  }
+
+    geometry.computeLineDistances();
+    return geometry;
+}
+
+function animate() {
+  requestAnimationFrame( animate );
+  render();
+}
+
+function render() {
+  renderer.render( scene, camera );
+}
+
+</script>
+</body>
+</html>

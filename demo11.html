@@ -1,7 +1,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Three.js: Object Picking and Random Object Generation</title>
+    <title>Three.js: Post Processing and Shaders</title>
   </head>
 <body>
 <!-- This is where the model will be displayed -->
@@ -12,6 +12,16 @@
 <script src="lib/TrackballControls.js"></script>
 <script src="lib/Detector.js"></script>
 <script src="lib/threex.windowresize.js"></script>
+<!-- Shaders -->
+<script src="lib/shaders/CopyShader.js"></script>
+<script src="lib/shaders/DotScreenShader.js"></script>
+<script src="lib/shaders/RGBShiftShader.js"></script>
+<script src="lib/shaders/SepiaShader.js"></script>
+<!-- Post Processing -->
+<script src="lib/postprocessing/EffectComposer.js"></script>
+<script src="lib/postprocessing/RenderPass.js"></script>
+<script src="lib/postprocessing/MaskPass.js"></script>
+<script src="lib/postprocessing/ShaderPass.js"></script>
 
 <!-- Begin model script -->
 <script>
@@ -25,6 +35,7 @@ var SCREEN_WIDTH = window.innerWidth;
 var SCREEN_HEIGHT = window.innerHeight;
 // additional variables
 range = 50;
+var composer;
 
 init();
 animate();
@@ -77,7 +88,7 @@ info.style.position = 'absolute';
 info.style.top = '10px';
 info.style.width = '100%';
 info.style.textAlign = 'center';
-info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> -- Object Picking and Random Object Generation, based on <a href="http://soledadpenades.com/articles/three-js-tutorials/object-picking/" tartget="_blank">Soledad Penade\'s tutorial</a>';
+info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> -- Post Processing and Shaders';
 container.appendChild( info );
 
 // Add some cubes to the scene
@@ -107,6 +118,46 @@ container.appendChild( info );
 
   // User interaction
   window.addEventListener( 'mousemove', onMouseMove, false );
+
+  // POST PROCESSING AND SHADER WORK
+  // 1. Define the Shader
+  composer = new THREE.EffectComposer( renderer );
+  // 2. Add a blank pass (no effects) to render the frame
+  composer.addPass( new THREE.RenderPass( scene, camera ) );
+
+  // 3. create the ShaderPass with the shader as a parameter
+  //effect = new THREE.ShaderPass( THREE.DotScreenShader );
+  //console.log("running DotScreenShader pass")
+  //Add any parameters as uniform values
+  //effect.uniforms[ 'scale' ].value = 4;
+  //console.log(effect.uniforms);
+  // LAST PASS MUST RENDER TO SCREEN OR IT WON'T SHOW ANYTHING
+  //effect.renderToScreen = true;
+  // Add the effect to the composer.
+  //composer.addPass( effect );
+
+  // ADDING MY OWN SHADER FOR TESTING
+  effect = new THREE.ShaderPass (THREE.SepiaShader);
+  console.log ("running SepiaShader");
+  effect.uniforms[ 'amount' ].value = 0.75;
+  console.log(effect.uniforms);
+  effect.renderToScreen;
+  composer.addPass( effect );
+
+
+  // Why do I still need to run this even if I don't want the color (amount = 0.0)?
+  effect = new THREE.ShaderPass( THREE.RGBShiftShader );
+  console.log("running RGBShiftShader");
+  effect.uniforms[ 'amount' ].value = 0.0;
+  console.log(effect.uniforms);
+  effect.renderToScreen = true;
+  composer.addPass( effect );
+
+  //NOTES:
+  // 1. You can chain as many shaders as you need to accomplish your task
+  // howerver that may have an effect on performance.
+  // 2. If there are no effects to pass comment out shader steps 1 and 2 and change
+  // composer.render back to renderer.render in animate()
 } // close init function
 
 function onMouseMove( e ) {
@@ -116,7 +167,7 @@ function onMouseMove( e ) {
   var raycaster = projector.pickingRay( mouseVector.clone(), camera ),
   intersects = raycaster.intersectObjects( cubes.children );
   cubes.children.forEach(function( cube ) {
-    cube.material.color.setRGB( cube.grayness, cube.grayness, cube.grayness );
+  cube.material.color.setRGB( cube.grayness, cube.grayness, cube.grayness );
   });
 
 
@@ -126,10 +177,17 @@ for( var i = 0; i < intersects.length; i++ ) {
       obj.material.color.setRGB( 1.0 - i / intersects.length, 0, 0 );
     }
   }
+
 function animate() {
   requestAnimationFrame( animate );
   controls.update();
-  renderer.render( scene, camera );
+//Add the lines below to animate
+//object.rotation.x += 0.005;
+cubes.rotation.y -= 0.001;
+
+//Instead of using the default renderer, render the composer
+composer.render();
+//  renderer.render( scene, camera );
 }
 
 

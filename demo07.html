@@ -17,20 +17,15 @@
 <script>
 // General three.js variables
 var camera, scene, renderer;
-// Model specific variables
-// particle related
-var cube;
 // light sources
 var light, light2;
 // Window measurement
 var SCREEN_WIDTH = window.innerWidth;
 var SCREEN_HEIGHT = window.innerHeight;
-// additional variables
-var range = 50;
-var particleSystem;
+// Cube variables
+var cube, geometry, materials;
 
 init();
-createParticles();
 animate();
 
 function init() {
@@ -79,47 +74,52 @@ scene.add(light2);
 var info = document.createElement( 'div' );
 info.style.position = 'absolute';
 info.style.top = '10px';
-info.style.width = '100%';
+info.style.width = '80%';
 info.style.textAlign = 'center';
 info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> -- rotating cube with different colors on each face';
 container.appendChild( info );
-}
-
-function createCube() {
-  var geometry = new THREE.CubeGeometry(100, 100, 100);
-  var materials = [
+geometry = new THREE.CubeGeometry(20, 20, 20, 1, 1, 1);
+materials = [
                 //Left side (posx)
                 new THREE.MeshLambertMaterial({
-                    color: 0x1a0e05
+                    color: 0xff00ff
                 }),
                 //Right side (negx)
                 new THREE.MeshLambertMaterial({
-                    color: 0x1a0e05
+                    color: 0x0000ff
                 }),
                 //Top side (posy)
                 new THREE.MeshLambertMaterial({
-                    color: 0x1a0e05
+                    color: 0x00ff00
                 }),
                 //Bottom side (negy)
                 new THREE.MeshLambertMaterial({
-                    color: 0xffffff,
-                    map: texture
+                    color: 0xffffff
                 }),
                 //Front side (posz)
                 new THREE.MeshLambertMaterial({
-                    color: 0x1a0e05
+                    color: 0x00ffff
                 }),
                 //Back side (negz)
                 new THREE.MeshLambertMaterial({
-                    color: 0x1a0e05
+                    color: 0xffff00
                 })
     ];
-  var cube = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+  cube = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+  scene.add(cube);
+}
+
+function rotate() {
+  console.log("If we get to here, we have read cube");
+  cube.rotation.x += 0.005;
+  cube.rotation.y -=0.005;
+
 }
 
 function animate() {
-  renderer.render( scene, camera );
   requestAnimationFrame( animate );
+  rotate();
+  renderer.render( scene, camera );
 } // End Animate function
 </script>
 </body>
