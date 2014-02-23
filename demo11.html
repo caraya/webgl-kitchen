@@ -14,9 +14,8 @@
 <script src="lib/threex.windowresize.js"></script>
 <!-- Shaders -->
 <script src="lib/shaders/CopyShader.js"></script>
-<script src="lib/shaders/DotScreenShader.js"></script>
+<script src="lib/shaders/FilmShader.js"></script>
 <script src="lib/shaders/RGBShiftShader.js"></script>
-<script src="lib/shaders/SepiaShader.js"></script>
 <!-- Post Processing -->
 <script src="lib/postprocessing/EffectComposer.js"></script>
 <script src="lib/postprocessing/RenderPass.js"></script>
@@ -126,30 +125,23 @@ container.appendChild( info );
   composer.addPass( new THREE.RenderPass( scene, camera ) );
 
   // 3. create the ShaderPass with the shader as a parameter
-  //effect = new THREE.ShaderPass( THREE.DotScreenShader );
-  //console.log("running DotScreenShader pass")
+  effect = new THREE.ShaderPass (THREE.FilmShader);
+  // Log wich shader we're running for documenting the chain (if there is one)
+  console.log("running FilmShader");
   //Add any parameters as uniform values
-  //effect.uniforms[ 'scale' ].value = 4;
-  //console.log(effect.uniforms);
-  // LAST PASS MUST RENDER TO SCREEN OR IT WON'T SHOW ANYTHING
-  //effect.renderToScreen = true;
-  // Add the effect to the composer.
-  //composer.addPass( effect );
-
-  // ADDING MY OWN SHADER FOR TESTING
-  effect = new THREE.ShaderPass (THREE.SepiaShader);
-  console.log ("running SepiaShader");
-  effect.uniforms[ 'amount' ].value = 0.75;
+  effect.uniforms['time'].value = 1.0;
   console.log(effect.uniforms);
-  effect.renderToScreen;
+  // If this is the last effect on the chain, make sure you call
+  // effect.renderToScreen = true, otherwise it will not render
+  // Add the effect to the composer.
   composer.addPass( effect );
-
 
   // Why do I still need to run this even if I don't want the color (amount = 0.0)?
   effect = new THREE.ShaderPass( THREE.RGBShiftShader );
   console.log("running RGBShiftShader");
   effect.uniforms[ 'amount' ].value = 0.0;
   console.log(effect.uniforms);
+  // LAST PASS MUST RENDER TO SCREEN OR IT WON'T SHOW ANYTHING
   effect.renderToScreen = true;
   composer.addPass( effect );
 
