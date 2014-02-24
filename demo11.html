@@ -119,6 +119,13 @@ container.appendChild( info );
   window.addEventListener( 'mousemove', onMouseMove, false );
 
   // POST PROCESSING AND SHADER WORK
+  //NOTES:
+  // 1. You can chain as many shaders as you need to accomplish your task
+  // howerver that may have an effect on performance.
+  // 2. If there are no effects to pass comment out shader steps 1 and 2 and change
+  // composer.render back to renderer.render in animate()
+
+  // STEPS
   // 1. Define the Shader
   composer = new THREE.EffectComposer( renderer );
   // 2. Add a blank pass (no effects) to render the frame
@@ -137,19 +144,21 @@ container.appendChild( info );
   composer.addPass( effect );
 
   // Why do I still need to run this even if I don't want the color (amount = 0.0)?
-  effect = new THREE.ShaderPass( THREE.RGBShiftShader );
-  console.log("running RGBShiftShader");
-  effect.uniforms[ 'amount' ].value = 0.0;
-  console.log(effect.uniforms);
-  // LAST PASS MUST RENDER TO SCREEN OR IT WON'T SHOW ANYTHING
-  effect.renderToScreen = true;
-  composer.addPass( effect );
+  //effect = new THREE.ShaderPass( THREE.RGBShiftShader );
+  //console.log("running RGBShiftShader");
+  //effect.uniforms[ 'amount' ].value = 0.0;
+  //console.log(effect.uniforms);
+  //effect.renderToScreen = true;
+  //composer.addPass( effect );
 
-  //NOTES:
-  // 1. You can chain as many shaders as you need to accomplish your task
-  // howerver that may have an effect on performance.
-  // 2. If there are no effects to pass comment out shader steps 1 and 2 and change
-  // composer.render back to renderer.render in animate()
+  var copyPass = new THREE.ShaderPass( THREE.CopyShader );
+  // LAST PASS MUST RENDER TO SCREEN OR IT WON'T SHOW ANYTHING
+  // we use copy shader (copyPass defined above) as the last pass
+  // with no effects to render.
+  composer.addPass( copyPass );
+  //set last pass in composer chain to renderToScreen
+  copyPass.renderToScreen = true;
+
 } // close init function
 
 function onMouseMove( e ) {

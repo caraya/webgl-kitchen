@@ -1,93 +1,214 @@
 <html>
-<head>
-  <title>Three.js Mutliple Objects and Multiple Groups per Object</title>
-</head>
+  <head>
+    <meta charset="utf-8">
+    <title>Three.js: dat gui maniulation</title>
+  </head>
 <body>
-<canvas id="canvas1"></canvas>
-<!--
-  At the very minimum we need the two libraries below
-  Examples/Demos may need additional scripts and libraries,
-  From Three.js, Threex or other sources
--->
-<script src="lib/three.min.js"></script>
-<script src="lib/threex.windowresize.js"></script>
+<!-- This is where the model will be displayed -->
+<div id="display"></div>
 
+<!-- Script links -->
+<script src="lib/three.min.js"></script>
+<script src="lib/TrackballControls.js"></script>
+<script src="lib/Detector.js"></script>
+<script src="lib/threex.windowresize.js"></script>
+<!-- Shaders -->
+<script src="lib/shaders/CopyShader.js"></script>
+<script src="lib/shaders/FilmShader.js"></script>
+<script src="lib/shaders/RGBShiftShader.js"></script>
+<!-- Post Processing -->
+<script src="lib/postprocessing/EffectComposer.js"></script>
+<script src="lib/postprocessing/RenderPass.js"></script>
+<script src="lib/postprocessing/MaskPass.js"></script>
+<script src="lib/postprocessing/ShaderPass.js"></script>
+<!-- Audio -->
+<script src="lib/audio/webaudio.js"></script>
+<!-- dat gui-->
+<script src="lib/dat.gui.js"></script>
+
+<!-- Begin model script -->
 <script>
 // General three.js variables
 var camera, scene, renderer;
-// floor/images variables
-var floor, floorGeometry, floorTexture;
-// Object related variables
-
-
-// Light-related variables, modify as needed
+// Model specific variables
+// light sources
 var light, light2;
-// define the canvas element in JS
-var canvas1 = document.getElementById('canvas1') ;
+// Window measurement
+var SCREEN_WIDTH = window.innerWidth;
+var SCREEN_HEIGHT = window.innerHeight;
+// additional variables
+range = 50;
+// Composer
 
-// If you're using functions to encapsulate functionality do the following:
-// 1. Include the functons between init() and animate()
-// 2. Make damn sure that you don't redeclare variables inside the functions (don't use var twice)
-//     as this will cause the code to fail
 init();
 animate();
 
-
 function init() {
-// Step 1 : Add Scene
+// Step 1: Add Scene
 scene = new THREE.Scene();
-
-// Step 2 : Add Camera
-camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 10000 );
-camera.position.set(0,-180,250);
+// Now we can set the camera using the elements defined above
+// We can also reduce the number of variables by putting the values directly into the camera variable below
+camera = new THREE.PerspectiveCamera( 45, SCREEN_WIDTH / SCREEN_HEIGHT, 0.1, 10000);
+scene.add(camera);
+// The position.set value for the camera will setup the initial field of vision for the model
+camera.position.set(0, 0, 50);
 camera.lookAt(scene.position);
-scene.add( camera );
+// TrackballControlls
+controls = new THREE.TrackballControls( camera );
+controls.zoomSpeed = 0.5;
 
-// Step 3 : Add  basic checkerboard floor plane
-floorTexture = new THREE.ImageUtils.loadTexture( 'assets/images/checkerboard.jpg' );
-floorTexture.wrapS = THREE.RepeatWrapping;
-floorTexture.wrapT = THREE.RepeatWrapping;
-floorTexture.repeat.set( 10, 10 );
-floorMaterial = new THREE.MeshPhongMaterial( { map: floorTexture } );
-floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
-floor = new THREE.Mesh(floorGeometry, floorMaterial);
 
-floor.position.y = 2.5;
-floor.rotation.x = Math.PI  *  2;
-scene.add(floor);
+// Step 2: Set up the renderer
+// We use the WebGL detector library we referenced in our scripts  to test if WebGL is supported or not
+// If it is supported then we use the WebGL renderer with antialiasing
+// If there is no WebGL support we fall back to the canvas renderer
+if ( Detector.webgl ) {
+  renderer = new THREE.WebGLRenderer( {antialias:true} );
+ }  else {
+     renderer = new THREE.CanvasRenderer();
+}
+// Set the size of the renderer to the full size of the screen
+renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+renderer.setClearColor( 0xeeeeee, 1.0 );
+// Set up the contaier element in Javascript
+var container = document.getElementById( 'display' );
+THREEx.WindowResize(renderer, camera);
+// Add the child renderer as the container's child element
+container.appendChild( renderer.domElement );
 
-// If you will not use functions to create objects then put the objects below
-sphereGeometry = new THREE.SphereGeometry(120, 20, 20);
-sphereMaterial = new THREE.MeshPhongMaterial ({
-  color: 0x0000ff,
-  wireframe: false
-});
-sphereMesh = new THREE.Mesh( sphereGeometry, sphereMaterial);
-scene.add( sphereMesh );
-
-// If you will not use functions to create the light sources, then put them below
+// Step 3 : Add  objects
+// Add 2 light sources.
 light = new THREE.DirectionalLight( 0xffffff );
-light.position.set( 0, 45 ,0 ).normalize();
-light2 = new THREE.DirectionalLight( 0xff00ff );
-light2.position.set( 0, 0, 450 ).normalize();
+light.position.set( 0, 90 ,450 ).normalize();
+light2 = new THREE.DirectionalLight( 0xffffff);
+light2.position.set( 0, 90, 450 ).normalize();
 scene.add(light);
 scene.add(light2);
 
-// Step 4 : Add Renderer
-//renderer = new THREE.CanvasRenderer();
-renderer = new THREE.WebGLRenderer(canvas1);
-renderer.setSize( window.innerWidth, window.innerHeight);
 
-document.body.appendChild( renderer.domElement );
-// This is what handles the window resize. No additional action is needed
-THREEx.WindowResize(renderer, camera);
-}
+var info = document.createElement( 'div' );
+info.style.position = 'absolute';
+info.style.top = '10px';
+info.style.width = '100%';
+info.style.textAlign = 'center';
+info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> -- DAT Gui and app wiring';
+container.appendChild( info );
+
+// Add some cubes to the scene
+  geom = new THREE.CubeGeometry( 5, 5, 5 );
+
+  cubes = new THREE.Object3D();
+  scene.add( cubes );
+
+  for(var i = 0; i < 350; i++ ) {
+    var grayness = Math.random() * 0.5 + 0.25,
+      mat = new THREE.MeshBasicMaterial(),
+      cube = new THREE.Mesh( geom, mat );
+    mat.color.setRGB( grayness, grayness, grayness );
+    cube.position.set( range * (0.5 - Math.random()), range * (0.5 - Math.random()), range * (0.5 - Math.random()) );
+    // The line commented below causes an error
+    // cube.rotation.set( Math.random(), Math.random(), Math.random() ).multiplyScalar( 2 * Math.PI );
+    // I've asked the tutorial author if she has a clue. In the meantime the line below solves the issue
+    cube.rotation.set( (Math.random() * (2 * Math.PI)), (Math.random() * (2 * Math.PI)), (Math.random() * (2 * Math.PI)) );
+    cube.grayness = grayness;
+    cubes.add( cube );
+  }
+
+  // Picking stuff
+
+  projector = new THREE.Projector();
+  mouseVector = new THREE.Vector3();
+
+  // User interaction
+  window.addEventListener( 'mousemove', onMouseMove, false );
+
+  // WEBAUDIO API USING WEBAUDIO.JS
+  // This seems to only work on Chrome. I'm doing further research to
+  // explore workarounds for Firefox (other than saying Fuck You Mozilla)
+
+  // Instantiate the library
+  //var webaudio  = new WebAudio();
+  // create a sound
+  //var sound = webaudio.createSound();
+  // load The MP3 file and play it
+  //sound.load('assets/audio/wearetonight.mp3', function(sound){
+  //  sound.play();
+  //});
+
+        //POST PROCESSING
+        //Create Shader Passes
+        renderPass = new THREE.RenderPass( scene, camera );
+        copyPass = new THREE.ShaderPass( THREE.CopyShader );
+
+        filmPass = new THREE.ShaderPass( THREE.FilmShader );
+        filmPass.uniforms[ "sCount" ].value = 1000;
+        filmPass.uniforms[ "sIntensity" ].value = 0.4;
+        filmPass.uniforms[ "nIntensity" ].value = 0.4;
+
+        RGBShiftPass = new THREE.ShaderPass( THREE.RGBShiftShader );
+
+        //Init control Panel
+        shaderParams = {
+          film:true,
+          RGBShift:false,
+        }
+
+        var gui = new dat.GUI();
+        gui.add(shaderParams, 'film').onChange(onToggleShaders);
+        gui.add(shaderParams, 'RGBShift').onChange(onToggleShaders);
+        onToggleShaders();
+} // close init function
+
+
+
+function onMouseMove( e ) {
+  mouseVector.x = 2 * (e.clientX / SCREEN_WIDTH) - 1;
+  mouseVector.y = 1 - 2 * ( e.clientY / SCREEN_HEIGHT );
+
+  var raycaster = projector.pickingRay( mouseVector.clone(), camera ),
+  intersects = raycaster.intersectObjects( cubes.children );
+  cubes.children.forEach(function( cube ) {
+  cube.material.color.setRGB( cube.grayness, cube.grayness, cube.grayness );
+  });
+
+
+for( var i = 0; i < intersects.length; i++ ) {
+      var intersection = intersects[ i ],
+      obj = intersection.object;
+      obj.material.color.setRGB( 1.0 - i / intersects.length, 0, 0 );
+    } // closes for loop
+  } // closes onMouseMove
+
+      function onToggleShaders() {
+
+        composer = new THREE.EffectComposer( renderer);
+
+        //Add Shader Passes to Composer
+
+        composer.addPass( renderPass );
+
+        if (shaderParams.film){
+          composer.addPass( filmPass );
+        }
+        if (shaderParams.RGBShift){
+          composer.addPass( RGBShiftPass );
+        }
+
+        composer.addPass( copyPass );
+        //set last pass in composer chain to renderToScreen
+        copyPass.renderToScreen = true;
+      }
 
 function animate() {
-// requestAnimationFrame shim is included in Three.js, no need to create your own
-// animate() can also handle specific animation steps or they can be handled to an external function
-requestAnimationFrame( animate );
-renderer.render(scene, camera);
+  requestAnimationFrame( animate );
+  controls.update();
+  //Add the lines below to animate
+  cubes.rotation.x += 0.005;
+  cubes.rotation.y -= 0.01;
+
+//Instead of using the default renderer, render the composer
+ composer.render();
+//renderer.render( scene, camera );
 }
 </script>
 </body>

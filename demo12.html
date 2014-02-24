@@ -147,13 +147,21 @@ container.appendChild( info );
   composer.addPass( effect );
 
   // Why do I still need to run this even if I don't want the color (amount = 0.0)?
-  effect = new THREE.ShaderPass( THREE.RGBShiftShader );
-  console.log("running RGBShiftShader");
-  effect.uniforms[ 'amount' ].value = 0.0;
-  console.log(effect.uniforms);
+  //effect = new THREE.ShaderPass( THREE.RGBShiftShader );
+  //console.log("running RGBShiftShader");
+  //effect.uniforms[ 'amount' ].value = 0.0;
+  //console.log(effect.uniforms);
   // LAST PASS MUST RENDER TO SCREEN OR IT WON'T SHOW ANYTHING
-  effect.renderToScreen = true;
-  composer.addPass( effect );
+  //effect.renderToScreen = true;
+  //composer.addPass( effect );
+  var copyPass = new THREE.ShaderPass( THREE.CopyShader );
+  // LAST PASS MUST RENDER TO SCREEN OR IT WON'T SHOW ANYTHING
+  // we use copy shader (copyPass defined above) as the last pass
+  // with no effects to render.
+  composer.addPass( copyPass );
+  //set last pass in composer chain to renderToScreen
+  copyPass.renderToScreen = true;
+
 
   // WEBAUDIO API USING WEBAUDIO.JS
   // This seems to only work on Chrome. I'm doing further research to
