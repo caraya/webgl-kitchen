@@ -37,8 +37,11 @@ var light, light2;
 var SCREEN_WIDTH = window.innerWidth;
 var SCREEN_HEIGHT = window.innerHeight;
 // additional variables
-range = 50;
+var range = 50;
 // Composer
+var composer;
+// WebAudio
+var webaudio, sound;
 
 init();
 animate();
@@ -122,44 +125,47 @@ container.appendChild( info );
   // User interaction
   window.addEventListener( 'mousemove', onMouseMove, false );
 
-  // WEBAUDIO API USING WEBAUDIO.JS
-  // This seems to only work on Chrome. I'm doing further research to
-  // explore workarounds for Firefox (other than saying Fuck You Mozilla)
+  processAudio();
 
-  // Instantiate the library
-  //var webaudio  = new WebAudio();
-  // create a sound
-  //var sound = webaudio.createSound();
-  // load The MP3 file and play it
-  //sound.load('assets/audio/wearetonight.mp3', function(sound){
-  //  sound.play();
-  //});
+  //POST PROCESSING
+  //Create Shader Passes
 
-        //POST PROCESSING
-        //Create Shader Passes
-        renderPass = new THREE.RenderPass( scene, camera );
-        copyPass = new THREE.ShaderPass( THREE.CopyShader );
+  renderPass = new THREE.RenderPass( scene, camera );
+  copyPass = new THREE.ShaderPass( THREE.CopyShader );
 
-        filmPass = new THREE.ShaderPass( THREE.FilmShader );
-        filmPass.uniforms[ "sCount" ].value = 1000;
-        filmPass.uniforms[ "sIntensity" ].value = 0.4;
-        filmPass.uniforms[ "nIntensity" ].value = 0.4;
+  filmPass = new THREE.ShaderPass( THREE.FilmShader );
+  filmPass.uniforms[ "sCount" ].value = 1000;
+  filmPass.uniforms[ "sIntensity" ].value = 0.4;
+  filmPass.uniforms[ "nIntensity" ].value = 0.4;
 
-        RGBShiftPass = new THREE.ShaderPass( THREE.RGBShiftShader );
+  RGBShiftPass = new THREE.ShaderPass( THREE.RGBShiftShader );
 
-        //Init control Panel
-        shaderParams = {
-          film:true,
-          RGBShift:false,
-        }
+  //Init control Panel
+  shaderParams = {
+    film:false,
+    RGBShift:false,
+    volume: 1
+  }
 
-        var gui = new dat.GUI();
-        gui.add(shaderParams, 'film').onChange(onToggleShaders);
-        gui.add(shaderParams, 'RGBShift').onChange(onToggleShaders);
-        onToggleShaders();
+  var gui = new dat.GUI({
+    height : 5 * 32 - 1
+  });
+
+  var f1 = gui.addFolder('Shaders');
+  f1.add(shaderParams, 'film')
+    .onChange(onToggleShaders);
+  f1.add(shaderParams, 'RGBShift')
+    .onChange(onToggleShaders);
+  // Number field with slider
+  var f2 = gui.addFolder('Audio');
+  f2.add(shaderParams, "volume")
+    .min(0)
+    .max(100)
+    .step(1)
+    .onChange(onVolumeChange);
+
+  onToggleShaders();
 } // close init function
-
-
 
 function onMouseMove( e ) {
   mouseVector.x = 2 * (e.clientX / SCREEN_WIDTH) - 1;
@@ -170,34 +176,50 @@ function onMouseMove( e ) {
   cubes.children.forEach(function( cube ) {
   cube.material.color.setRGB( cube.grayness, cube.grayness, cube.grayness );
   });
-
-
-for( var i = 0; i < intersects.length; i++ ) {
+  for( var i = 0; i < intersects.length; i++ ) {
       var intersection = intersects[ i ],
       obj = intersection.object;
-      obj.material.color.setRGB( 1.0 - i / intersects.length, 0, 0 );
-    } // closes for loop
-  } // closes onMouseMove
+      obj.material.color.setRGB( 1.0 - i / intersects.length, 0, 1.0 - i / intersects.length );
+  } // closes for loop
+} // closes onMouseMove
 
-      function onToggleShaders() {
+function onToggleShaders() {
+  composer = new THREE.EffectComposer( renderer);
+  //Add Shader Passes to Composer
 
-        composer = new THREE.EffectComposer( renderer);
+  composer.addPass( renderPass );
 
-        //Add Shader Passes to Composer
+  if (shaderParams.film){
+    composer.addPass( filmPass );
+  }
 
-        composer.addPass( renderPass );
+  if (shaderParams.RGBShift){
+    composer.addPass( RGBShiftPass );
+  }
 
-        if (shaderParams.film){
-          composer.addPass( filmPass );
-        }
-        if (shaderParams.RGBShift){
-          composer.addPass( RGBShiftPass );
-        }
+  composer.addPass( copyPass );
+  //set last pass in composer chain to renderToScreen
+  copyPass.renderToScreen = true;
+} //end onToggleShaders
 
-        composer.addPass( copyPass );
-        //set last pass in composer chain to renderToScreen
-        copyPass.renderToScreen = true;
-      }
+function processAudio(){
+  // WEBAUDIO API USING WEBAUDIO.JS
+  // This seems to only work on Chrome. I'm doing further research to
+  // explore workarounds for Firefox (other than saying Fuck You Mozilla)
+
+  // Instantiate the library
+  webaudio  = new WebAudio();
+  // create a sound
+  sound = webaudio.createSound();
+  // load The MP3 file and play it
+  sound.load('assets/audio/wearetonight.mp3', function(sound){
+    sound.play();
+  });
+}
+
+function onVolumeChange(newVol){
+  webaudio.volume(newVol);
+}
 
 function animate() {
   requestAnimationFrame( animate );
