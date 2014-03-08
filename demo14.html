@@ -1,7 +1,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Three.js: Random Particle System</title>
+    <title>Three.js: Animation Exercise</title>
   </head>
 <body>
 <!-- This is where the model will be displayed -->
@@ -25,8 +25,9 @@ var SCREEN_HEIGHT = window.innerHeight;
 // Cube variables
 var cube, geometry, materials;
 // Director related variables
-var director;
+var director, lookAt;
 var radius , radius2, h2, w2;
+
 
 init();
 animate();
@@ -40,7 +41,7 @@ camera = new THREE.PerspectiveCamera( 45, SCREEN_WIDTH / SCREEN_HEIGHT, 0.1, 100
 scene.add(camera);
 // The position.set value for the camera will setup the initial field of vision for the model
 camera.setLens(35);
-camera.position.set( 0, 0, 50 );
+camera.position.set( 0, 0, 50);
 
 controls = new THREE.FirstPersonControls( camera );
 controls.lookSpeed = 0.0125;
@@ -88,9 +89,9 @@ scene.add(light2);
 var info = document.createElement( 'div' );
 info.style.position = 'absolute';
 info.style.top = '10px';
-info.style.width = '80%';
+info.style.width = '100%';
 info.style.textAlign = 'center';
-info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> -- rotating cube with different colors on each face';
+info.innerHTML = '<a href="http://threejs.org" target="_blank">three.js</a> -- Three.js: Animation Exercise';
 container.appendChild( info );
 
 // Creating the cube we'll animate later
@@ -123,17 +124,17 @@ materials = [
 cube = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
 scene.add(cube);
 
-initAnimation();
 
+//initAnimation();
 } // Ends  init()
 
+/*
 function initAnimation() {
   director = new THREE.Director();
+  var lookAt = new THREE.Vector3();
   console.log(director); // If this logs, we've initialized Director.js
 
-  // All Director based functions are chained, like jQuery
-  //
-
+  // All Director based functions are chained, like jQuery.
   // addAction(time, function)
   // addTween(time, duration, target_object, start_values, end_values, tween, callback)
 
@@ -147,18 +148,69 @@ function initAnimation() {
   .addAction(3.5, function() {
     camera.position.set( 750, 850, 750 );
   })
-  .addTween(0, 5, light2,  {intensity:0}, {intensity:1}, 'linear', function(k) {
+  .addTween(0, 5, light2, {intensity:0}, {intensity:1}, 'linear', function(k) {
     // pointlight.color.r = pointlight.color.g = pointlight.color.b = k;
-  })
-  .addAction(10, function() {
-    camera.position.set(0, 0, 0);
   })
   .addAction(10, function() {
     // top view
     camera.position.set(0, 1000, 0);
   })
-}
 
+  .addAction(12, function() {
+    // spy view
+    camera.position.set(0, 400, 0);
+  })
+  .addAction(14, function() {
+    // satelite view
+    camera.position.set(100, 1200, 0);
+  })
+  .addAction(16, function() {
+    // back to diagonal view
+    camera.position.set(500, 400, 500);
+  })
+  // cross the terrian
+  .addTween(18, 4, camera.position, {}, {x:300 , y: 80, z: -2000}, 'cubicInOut')
+  .addTween(18, 4, camera, {lens: 35}, {lens: 100}, 'cubicInOut', function(k) {
+    camera.setLens(camera.lens);
+  })
+  .addTween(18, 4, lookAt, {}, {x:300 , y: 80, z: 2000}, 'linear')
+
+
+  .addTween(22, 4.5, camera.position, {}, {x: -300}, 'linear')
+  .addAction(26.5, function() {
+    lookAt.set(0,-150,0);
+    lookAt.use = true;
+  })
+  // 26.5
+  .addTween(w2, 2, camera, null, {lens: 24}, 'linear', function(k) {
+    // zoom out
+    lookAt.use = true;
+    camera.setLens(camera.lens);
+    lookAt.y = -150;
+  })
+  .addTween(w2, 2, camera.position, null, {x: radius, y: h2, z: -radius}, 'linear')
+  .addTween(w2+2, 2, camera.position, null, {x: radius, y: h2, z: radius}, 'cubicInOut')
+  .addTween(w2+4, 2, camera.position, null, {x: -radius, y: h2, z: radius}, 'cubicInOut')
+  .addTween(w2+6, 2, camera.position, null, {x: -radius, y: h2, z: -radius}, 'cubicInOut')
+  .addTween(w2+8, 2, camera.position, null, {x: -radius, y: h2+400, z: -radius}, 'cubicInOut')
+  .addTween(w2+10, 2, camera.position, null, {x: radius, y: h2+400, z: -radius}, 'cubicInOut')
+  .addTween(w2+12, 2, camera.position, null, {x: radius, y: h2+800, z: -radius}, 'linear')
+  .addTween(w2+14, 2, camera, null, {lens:16}, 'linear')
+
+  .addAction(42, function() {
+    lookAt.y = 50;
+    camera.setLens(16);
+  })
+  .addTween(42, 8, camera, {lens: 16}, {lens: 24}, 'linear')
+  .addTween(42, 14, camera, {r:0, dist: 0}, {r:5, dist: 1000}, 'cubicInOut', function(m) {
+    // Do more rotations
+    var angle = camera.r * Math.PI;
+    camera.position.x = cos(angle) * (400 + camera.dist);
+    camera.position.z = sin(angle) * (400 + camera.dist);
+    camera.position.y = sin(angle/2) * 450 + 540;
+  })
+}
+*/
 function rotate() {
   //console.log("If we get to here, we have read cube");
   cube.rotation.x += 0.005;
@@ -167,7 +219,7 @@ function rotate() {
 
 function animate() {
   requestAnimationFrame( animate );
-  //rotate();
+  rotate();
   renderer.render( scene, camera );
 } // End Animate function
 </script>
